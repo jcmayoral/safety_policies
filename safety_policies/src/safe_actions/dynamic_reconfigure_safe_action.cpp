@@ -14,6 +14,9 @@ DynamicReconfigureSafeAction::~DynamicReconfigureSafeAction(){
 };
 
 void DynamicReconfigureSafeAction::execute(){
+    ROS_ERROR("TODO Check Dynamic ReconfigureSafeAction");
+    return;
+    /*
     ROS_INFO("Execute Dynamic Reconfigure Safe Action");
     dynamic_reconfigure::ReconfigureRequest srv_req;
     dynamic_reconfigure::ReconfigureResponse srv_resp;
@@ -41,11 +44,14 @@ void DynamicReconfigureSafeAction::execute(){
     conf.doubles.push_back(double_param);
 
     srv_req.config = conf;
-
-    ros::service::call("/move_base/DWAPlannerROS/set_parameters", srv_req, srv_resp);
+    */
+    //ros::service::call("/move_base/DWAPlannerROS/set_parameters", srv_req, srv_resp);
 };
 
 void DynamicReconfigureSafeAction::stop(){
+    ROS_ERROR("TODO Check Dynamic ReconfigureSafeAction");
+    return;
+    /*
     ROS_INFO("Stopping setting to default params");
     dynamic_reconfigure::ReconfigureRequest srv_req;
     dynamic_reconfigure::ReconfigureResponse srv_resp;
@@ -57,6 +63,6 @@ void DynamicReconfigureSafeAction::stop(){
     conf.bools.push_back(bool_param);
 
     srv_req.config = conf;
-
-    ros::service::call("/move_base/DWAPlannerROS/set_parameters", srv_req, srv_resp);
+    */
+    //ros::service::call("/move_base/DWAPlannerROS/set_parameters", srv_req, srv_resp);
 };
