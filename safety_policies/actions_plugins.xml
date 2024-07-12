@@ -1,0 +1,19 @@
+<library path="lib/libsafe_actions">
+  <class name="stop_action" type="safety_policies::PublisherSafeAction" base_class_type="safety_core::SafeAction">
+    <description>
+      Publisher Topic Safe Action
+    </description>
+  </class>
+
+  <class name="slow_action" type="safety_policies::DynamicReconfigureSafeAction" base_class_type="safety_core::SafeAction">
+    <description>
+      Dynamic Reconfigure Safe Action
+    </description>
+  </class>
+
+  <class name="power_action" type="safety_policies::ServiceCallerSafeAction" base_class_type="safety_core::SafeAction">
+    <description>
+      ROS SERVICE Safe Action
+    </description>
+  </class>
+</library>
