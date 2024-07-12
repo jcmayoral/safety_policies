@@ -56,8 +56,7 @@ catkin_package(
 file(GLOB POLICIES src/policies/*.cpp)
 file(GLOB ACTIONS src/safe_actions/*.cpp)
 
-add_library(safety_policies ${POLICIES} src/policies_manager.cpp)
-add_library(safe_actions ${ACTIONS})
+add_library(safety_policies ${POLICIES} ${ACTIONS} src/policies_manager.cpp)
 add_executable(proximity_policy_node src/proximity_policy_node.cpp)
 add_executable(hri_policy_node src/hri_policy_node.cpp)
 
@@ -68,21 +67,21 @@ add_definitions(-DCURL_STATICLIB)
 
 target_link_libraries(safety_policies ${catkin_LIBRARIES} curl ${JSON_INCLUDE_DIRS} ${PCL_LIBRARIES} ${YAML_CPP_LIBRARIES} yaml-cpp)
 #Independent policies
-target_link_libraries(proximity_policy_node safety_policies safe_actions)
-target_link_libraries(hri_policy_node safety_policies safe_actions)
+target_link_libraries(proximity_policy_node safety_policies)
+target_link_libraries(hri_policy_node safety_policies)
 
 #Policies Manager
-target_link_libraries(policies_manager_node safety_policies safe_actions)
+target_link_libraries(policies_manager_node safety_policies)
 #Action Manager
 target_link_libraries(action_manager_node ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 add_dependencies(safety_policies ${catkin_EXPORTED_TARGETS} safety_policies_gencfg)
-add_dependencies(proximity_policy_node safety_policies safe_actions safety_policies_gencfg)
-add_dependencies(hri_policy_node safety_policies safe_actions safety_policies_gencfg)
-add_dependencies(policies_manager_node safety_policies safe_actions safety_policies_gencfg)
+add_dependencies(proximity_policy_node safety_policies safety_policies_gencfg)
+add_dependencies(hri_policy_node safety_policies safety_policies_gencfg)
+add_dependencies(policies_manager_node safety_policies safety_policies_gencfg)
 
 ### INSTALLS
-install(TARGETS safety_policies safe_actions
+install(TARGETS safety_policies
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )

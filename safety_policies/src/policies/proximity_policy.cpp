@@ -44,22 +44,19 @@ namespace safety_policies
 
   void ProximityPolicy::poses_CB(const geometry_msgs::PoseArray::ConstPtr& poses){
     boost::recursive_mutex::scoped_lock scoped_lock(mutex);
-    //color
     bool warning_zone = false;
+    last_detection_time_ = ros::Time::now();
 
     for (int i = 0; i < poses->poses.size(); i++) {
       if (getRing(poses->poses[i].position.x, poses->poses[i].position.y) == 0){//FIRST POINT IN DANGER ZONE.. Return
         fault_region_id_ = 0;
         last_detection_time_ = ros::Time::now();
-        is_obstacle_detected_ = true;
         return;
       }
 
       if (getRing(poses->poses[i].position.x, poses->poses[i].position.y) == 1){
         fault_region_id_ = 1;
         warning_zone = true;
-        last_detection_time_ = ros::Time::now();
-
         is_obstacle_detected_ = true;
       }
 
@@ -102,14 +99,21 @@ namespace safety_policies
   }
 
   void ProximityPolicy::timer_cb(const ros::TimerEvent& event){
+    ROS_INFO_STREAM("TIMER CB" << ros::Time::now().toSec() - last_detection_time_.toSec());
+    ROS_INFO_STREAM("TIMEOUT " << enabling_after_timeout_);
+
+    createAllRings();
+    publishTopics();
     if (ros::Time::now().toSec() - last_detection_time_.toSec() > enabling_after_timeout_){
+      ROS_ERROR("Enable default navigation... PAY ATTENTION");
       if (action_executer_!= NULL){
-        ROS_ERROR("Enable default navigation... PAY ATTENTION");
         action_executer_->stop();
         action_executer_ = NULL;
-        policy_.action_ = -1;
-        policy_.state_ = PolicyDescription::SAFE;
       }
+      policy_.action_ = -1;
+      policy_.state_ = PolicyDescription::SAFE;
+      last_detection_time_ = ros::Time::now();
+      fault_region_id_ = 2;
     }
 
   }
@@ -122,6 +126,7 @@ namespace safety_policies
   void ProximityPolicy::dyn_reconfigureCB(safety_policies::ProximityPolicyConfig &config, uint32_t level){
     region_radius_ = config.region_radius;
     enabling_after_timeout_ = config.sensor_timeout;
+    createAllRings();
   }
 
   void ProximityPolicy::createAllRings(){
@@ -147,13 +152,16 @@ namespace safety_policies
     //marker.scale.z = 0.05;
     switch(fault_region_id_){
       case 0: 
+        ROS_ERROR("red");
         marker.color.r = 1.0f;// /level;
         break;
       case 1:
+        ROS_WARN("Yello");
         marker.color.r = 1.0f;// /level;
         marker.color.g = 1.0f;// /level;
         break;
       case 2:
+        ROS_WARN("GREEN");
         marker.color.g = 1.0f;// /level;
         break;
     }
@@ -197,14 +205,13 @@ namespace safety_policies
     for (auto i=0; i< marker_array_.markers.size(); i++){
       marker_array_.markers[i].header.stamp = ros::Time::now();
     }
-     marker_pub_.publish(marker_array_);
+
+    marker_pub_.publish(marker_array_);
   }
 
   bool ProximityPolicy::checkPolicy()
   {
     boost::recursive_mutex::scoped_lock scoped_lock(mutex);
-    publishTopics();
-
     //The next condition is true when is obstacle not detected and
     // and executer is initialized (obstacle not anymore on danger region)
     if(action_executer_!= NULL && !is_obstacle_detected_){
@@ -251,6 +258,8 @@ namespace safety_policies
           }
         }
         else{//init if NULL
+          ROS_INFO_STREAM("Stopping no previous action " << action_executer_->getSafetyID());
+          return;
           action_executer_ = new DynamicReconfigureSafeAction();
           action_executer_->execute();
         }
@@ -259,7 +268,7 @@ namespace safety_policies
         ROS_ERROR("Error detecting obstacles");
         break;
     }
-    createAllRings();
+    //createAllRings();
     policy_.state_ = PolicyDescription::UNSAFE;
     policy_.action_ = action_executer_->getSafetyID();
   }
