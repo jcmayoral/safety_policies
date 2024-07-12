@@ -4,3 +4,22 @@ topics:
     - /test_topic
     - /detected_objects
     - /pointcloud_lidar_processing/detected_objects
+
+regions:
+    #warn
+    2: [[5.0, -5.0],
+        [5.0, 5.0],
+        [-5.0, 5.0],
+        [-5.0, -5.0]]
+    #danger
+    1: [[0, -4.0],
+        [4.0, -2.0],
+        [4.0, 2.0],
+        [0, 4.0],
+        [-4.0, 2.0],
+        [-4.0, -2.0]]
+    #lethal
+    0: [[3.5, 1.0],
+        [3.5, -1.0],
+        [-2.0, -1.0],
+        [-2.0, 1.0]]

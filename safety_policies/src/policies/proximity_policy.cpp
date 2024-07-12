@@ -39,6 +39,20 @@ namespace safety_policies
     //}
     }
 
+
+    const YAML::Node& regions_to_publish = config_yaml["regions"];
+
+    YAML::Node wconfig_yaml = YAML::LoadFile((path+"/config/safety_regions.yaml").c_str());
+    for (YAML::const_iterator a= regions_to_publish.begin(); a != regions_to_publish.end(); ++a){
+        auto region_idx = a->first.as<float>();
+        //Load footprint as a list of pair x y
+        std::list<std::pair<double, double>> markers = a->second.as<std::list<std::pair<double, double>>>();
+        //add each tuple as a vertex
+        for (auto& m : markers){
+          std::cout << " x " << m.first << " , " << m.second << std::endl;
+        }
+    } 
+
     marker_pub_ = nh.advertise<visualization_msgs::MarkerArray>("proximity_visualization", 1);
   }
 
