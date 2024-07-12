@@ -124,7 +124,7 @@ namespace safety_policies
   }
 
   void ProximityPolicy::dyn_reconfigureCB(safety_policies::ProximityPolicyConfig &config, uint32_t level){
-    region_radius_ = 0.5;//config.region_radius;
+    region_radius_ = config.region_radius;
     enabling_after_timeout_ = config.sensor_timeout;
     createAllRings();
   }
