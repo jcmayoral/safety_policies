@@ -41,17 +41,22 @@ namespace safety_policies
 
 
     const YAML::Node& regions_to_publish = config_yaml["regions"];
-
-    YAML::Node wconfig_yaml = YAML::LoadFile((path+"/config/safety_regions.yaml").c_str());
     for (YAML::const_iterator a= regions_to_publish.begin(); a != regions_to_publish.end(); ++a){
+        ProximityRegion auxiliar;
+        auxiliar.polygon.clear();
+
         auto region_idx = a->first.as<float>();
         //Load footprint as a list of pair x y
         std::list<std::pair<double, double>> markers = a->second.as<std::list<std::pair<double, double>>>();
         //add each tuple as a vertex
         for (auto& m : markers){
-          std::cout << " x " << m.first << " , " << m.second << std::endl;
+          auxiliar.polygon.push_back(std::make_pair(m.first, m.second));
         }
-    } 
+
+        ROS_ERROR_STREAM("ID "<< region_idx);
+
+        regions_data_[region_idx] = auxiliar;
+    }
 
     marker_pub_ = nh.advertise<visualization_msgs::MarkerArray>("proximity_visualization", 1);
   }
@@ -97,7 +102,8 @@ namespace safety_policies
 
   ProximityPolicy::ProximityPolicy(): is_obstacle_detected_(false), region_radius_(2.5),
                                         regions_number_(3), action_executer_(NULL),
-                                        fault_region_id_(0), enabling_after_timeout_(5.0)
+                                        fault_region_id_(0), enabling_after_timeout_(5.0),
+                                        regions_data_()
   {
     ros::NodeHandle nh;
     timer_ = nh.createTimer(ros::Duration(1), &ProximityPolicy::timer_cb, this);
@@ -146,7 +152,7 @@ namespace safety_policies
   void ProximityPolicy::createAllRings(){
     visualization_msgs::Marker marker;
     marker_array_.markers.clear();
-    for (auto i =1 ; i<=regions_number_; i++){
+    for (auto i =0 ; i<regions_number_; i++){
       createRingMarker(marker, i);
       marker_array_.markers.push_back(marker);
     }
@@ -164,53 +170,41 @@ namespace safety_policies
     marker.scale.x = 0.1;//region_radius_ * level;
     //marker.scale.y = region_radius_ * level;
     //marker.scale.z = 0.05;
-    switch(fault_region_id_){
+    switch(level){
       case 0: 
         ROS_ERROR("red");
         marker.color.r = 1.0f;// /level;
+        marker.color.b = 0;
+        marker.color.g = 0;
         break;
       case 1:
         ROS_WARN("Yello");
         marker.color.r = 1.0f;// /level;
         marker.color.g = 1.0f;// /level;
+        marker.color.b = 0;
         break;
       case 2:
         ROS_WARN("GREEN");
-        marker.color.g = 1.0f;// /level;
+        marker.color.r = 0;
+        marker.color.g = 0;
+        marker.color.b = 1.0f;// /level;
         break;
+      default: 
+        marker.color.r = 0;
+        marker.color.b = 0;
+        marker.color.g = 0;
+        
     }
     marker.color.a = 1.0;
 
+    auto region = regions_data_[level];
     geometry_msgs::Point circumference;
-    float r_2 = pow(region_radius_*level,2);
 
-    for (float y= -region_radius_*level; y<=region_radius_*level; y+=0.1 ){
-          if (pow(y,2) > r_2)
-            continue;
-          circumference.x = sqrt(r_2 - pow(y,2));
-          circumference.y = y;
+    for (auto point : region.polygon){
+          circumference.x = point.first;
+          circumference.y = point.second;
           marker.points.push_back(circumference);
     }
-
-
-    //For some value 0 is never reached
-    circumference.y = region_radius_*level;
-    circumference.x = 0.0;
-    marker.points.push_back(circumference);
-
-    //mirror
-    for (float y= region_radius_*level; y>=-region_radius_*level; y-= 0.1 ){
-          if (pow(y,2) > r_2)
-            continue;
-          circumference.x = -sqrt(r_2 - pow(y,2));
-          circumference.y = y;
-          marker.points.push_back(circumference);
-    }
-
-    //For some value 0 is never reached
-    circumference.y = -region_radius_*level;
-    circumference.x = 0.0;
-    marker.points.push_back(circumference);
 
   }
 

@@ -33,6 +33,10 @@
 namespace safety_policies
 {
 
+  struct ProximityRegion{
+    std::vector<std::pair<double,double>> polygon;
+  };
+
   class ProximityPolicy : public safety_core::SafePolicy
   {
     public:
@@ -68,6 +72,8 @@ namespace safety_policies
       boost::recursive_mutex mutex;
       dynamic_reconfigure::Server<safety_policies::ProximityPolicyConfig> dyn_server_;
       dynamic_reconfigure::Server<safety_policies::ProximityPolicyConfig>::CallbackType dyn_server_cb_;
+
+      std::map<int, ProximityRegion> regions_data_;
   };
 
 };
