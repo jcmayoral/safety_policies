@@ -41,7 +41,7 @@ namespace safety_policies
   {
     public:
 
-      ProximityPolicy();
+      ProximityPolicy(PolicyDescription::Type type = PolicyDescription::ACTIVE);
       ~ProximityPolicy();
 
       void instantiateServices(ros::NodeHandle nh);

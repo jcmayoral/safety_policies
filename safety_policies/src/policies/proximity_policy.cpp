@@ -100,7 +100,7 @@ namespace safety_policies
     return int(distance/region_radius_);
   }
 
-  ProximityPolicy::ProximityPolicy(): is_obstacle_detected_(false), region_radius_(2.5),
+  ProximityPolicy::ProximityPolicy(PolicyDescription::Type type): is_obstacle_detected_(false), region_radius_(2.5),
                                         regions_number_(3), action_executer_(NULL),
                                         fault_region_id_(0), enabling_after_timeout_(5.0),
                                         regions_data_()
@@ -111,7 +111,7 @@ namespace safety_policies
     policy_.id_ = "PROXIMITY_POLICY";
     policy_.action_ =  -1;
     policy_.state_ = PolicyDescription::UNKNOWN;
-    policy_.type_ = PolicyDescription::ACTIVE;
+    policy_.type_ = type;//PolicyDescription::ACTIVE;
 
     dyn_server_cb_ = boost::bind(&ProximityPolicy::dyn_reconfigureCB, this, _1, _2);
     dyn_server_.setCallback(dyn_server_cb_);
